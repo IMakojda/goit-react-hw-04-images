@@ -1,4 +1,4 @@
-import React,{Component} from "react";
+import {useState,useEffect} from "react";
 import SearchBar from "./searchBar/Searchbar";
 import ImageGallery from "./imageGallery/ImageGallery";
 import ApiImages from "./fetchApiPixabay/FetchApi";
@@ -9,91 +9,76 @@ import Button from "./button/Button";
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import {generateRandomColor} from './utils/ColorGenerator'
 
-export default class App extends Component {
+export default function App() {
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [imageList, setImageList] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [url, setUrl] = useState(null);
+  const [tags, setTags] = useState(null);
+  const [page, setPage] = useState(1);
+  const [loadMore, setLoadMore] = useState(false);
+  // eslint-disable-next-line
+  const [lastPage, setLastPage] = useState(null);
+  const [status, setStatus] = useState('idle');
+  // eslint-disable-next-line
+  const [error, setError] = useState(null)
+ 
+
+useEffect(() => {
   
-  state = {
-    searchQuery: "",
-    imageList: [],
-    error: null,
-    status: "idle",
-    showModal: false,
-    url: null,
-    tags: null,
-    page: 1,
-    perPage: 20,
-    loadMore: false,
-    lastPage:null
+  if (!searchQuery || !page) {
+   return;
   }
+   setStatus("pending");
+    ApiImages(searchQuery, page)
+    .then(({ hits, totalHits }) => {
+        setImageList(state => [...state, ...hits]);
+        setStatus("resolved");
+        setLoadMore(true)
+    
+    const lastPageMatch = setLastPage(Math.ceil(totalHits / hits));
+        
+      if (hits.length === 0) {
+        setLoadMore(false)
+        Notify.failure('Sorry, there are no images matching your search query. Please try again.');
+      }
 
-  componentDidUpdate(prevProps, prevState) {
-    const {searchQuery, page,perPage,lastPage}=this.state
-    const prevQuery = prevState.searchQuery;
-    const prevPage = prevState.page;
+      if (page === lastPageMatch) {
+        setLoadMore(false)
+        Notify.warning(`We're sorry, but you've reached the end of search results.`);
+      }
+    })
+    .catch(error => {
+      setError('Enter correct name.');
+    })
+  }, [searchQuery,page])  
 
-    if (prevQuery !== searchQuery || page !== prevPage) {
-      this.setState({ status: "pending" })
-
-      setTimeout(() => {
-        ApiImages(searchQuery, page, perPage)
-        .then(({ hits, totalHits }) => {
-          
-          this.setState(prevState => {
-            return {
-            imageList: [...prevState.imageList, ...hits],
-            status: "resolved",
-            loadMore: true,
-            lastPage: Math.ceil(totalHits / perPage),
-            }
-          })
-
-          if (hits.length === 0) {
-            this.setState({ loadMore: false })
-           Notify.failure('Sorry, there are no images matching your search query. Please try again.');
-          }
-
-          if (page === lastPage) {
-            this.setState({ loadMore: false })
-            Notify.warning(`We're sorry, but you've reached the end of search results.`);
-          }
-        })
-          
-      .catch(error=>this.setState({error:"Enter correct name."}))
-      },2000)
-    }
-  }
-
-  toggleModal = () => {
-    this.setState(({ showModal }) => ({
-      showModal: !showModal,
-    }))
+  const toggleModal = () => {
+    setShowModal(!showModal)
   }
   
-  handleClickImage = (url, tags) => {
-    this.setState({ url, tags });
-    this.toggleModal();
+  const handleClickImage = (url, tags) => {
+    setUrl(url);
+    setTags(tags);
+    toggleModal();
   }
   
-  handleLoadBtn = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1
-    }));
+  const handleLoadBtn = () => {
+    setPage(state=>state+1)
   }  
   
-  handleFormSubmit = searchQuery => {
-    this.setState({
-      searchQuery,
-      imageList: [],
-      lastPage: null,
-      page: 1,
-      loadMore:false,
-    })
+  const handleFormSubmit = searchQuery => {
+    setSearchQuery(searchQuery);
+    setImageList([]);
+    setLastPage(null);
+    setPage(1);
+    setLoadMore(false);
   }
 
-  render() {
-    const {searchQuery, imageList, status, showModal, url, tags, loadMore } = this.state
-    return (
+  return (
       <>
-        <SearchBar onSubmit={this.handleFormSubmit} />
+        <SearchBar onSubmit={handleFormSubmit} />
 
         {status === "idle" && <div className="noQuery">No image or photo yet</div>}
         
@@ -112,7 +97,7 @@ export default class App extends Component {
           <ImageGallery
           query={searchQuery}
           listItem={imageList}
-          imageClick={this.handleClickImage}
+          imageClick={handleClickImage}
         />
         )}
 
@@ -121,7 +106,7 @@ export default class App extends Component {
             <ImageGallery
               query={searchQuery}
               listItem={imageList}
-              imageClick={this.handleClickImage}
+              imageClick={handleClickImage}
             />
             {status === 'pending' && (
               <BallTriangle
@@ -132,19 +117,18 @@ export default class App extends Component {
             )}
             <Button
               nameClas="Button"
-              handleLoadBtn={this.handleLoadBtn}
+              handleLoadBtn={handleLoadBtn}
               labelBtn="Load More"
             ><span>Load More</span></Button>
           </>
         )}
         
         {showModal && (
-          <Modal onClose={this.toggleModal}>
+          <Modal onClose={toggleModal}>
             <img className="imageLarge" alt={tags} src={url} />
           </Modal>
         )}
       
     </>
     )
-  }
 };

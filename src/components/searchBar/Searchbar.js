@@ -1,17 +1,14 @@
-import React, { Component } from "react";
+import { useState } from "react";
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
-class SearchBar extends Component {
-  state = {
-    searchQuery: "",
+export default function Searchbar({ onSubmit }) {
+  const [searchQuery, setSearchQuery] = useState('')
+
+  const handleSearchQueryChange = e => {
+    setSearchQuery(e.currentTarget.value.toLowerCase())
   }
 
-  handleSearchQueryChange = e => {
-    this.setState({ searchQuery: e.currentTarget.value.toLowerCase() });
-  }
-
-  handleSubmit = e => {
-    const { searchQuery } = this.state
+  const handleSubmit = e => {
     e.preventDefault()
 
     if (searchQuery.trim() === '') {
@@ -19,32 +16,28 @@ class SearchBar extends Component {
       return
     }
 
-    this.props.onSubmit(searchQuery);
-    this.setState({ searchQuery: '' })
+    onSubmit(searchQuery);
+    setSearchQuery('')
   }
 
-  render() {
-    const { searchQuery } = this.state
-    return (
-      <header className="searchbar">
-        <form className="searchForm" onSubmit={this.handleSubmit}>
-          <button type="submit" className="searchForm-button" >
-            <span className="searchForm-button-label">Search</span>
-          </button>
+  return (
+    <header className="searchbar">
+      <form className="searchForm" onSubmit={handleSubmit}>
+        <button type="submit" className="searchForm-button" >
+          <span className="searchForm-button-label">Search</span>
+        </button>
 
-          <input
-            className="searchForm-input"
-            type="text"
-            autoComplete="off"
-            autoFocus
-            placeholder="Search images and photos"
-            value={searchQuery}
-            onChange={this.handleSearchQueryChange}
-          />
-        </form>
-      </header>
-    )
-  }
-}
+        <input
+          className="searchForm-input"
+          autoComplete="off"
+          autoFocus
+          placeholder="Search images and photos"
+          value={searchQuery}
+          onChange={handleSearchQueryChange}
+          type="text"
+        />
+      </form>
+    </header>
+  )
 
-export default SearchBar
+};

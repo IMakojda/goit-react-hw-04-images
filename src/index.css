@@ -178,10 +178,15 @@ img {
 }
 
 .modal {
-  max-width: calc(100vw - 48px);
-  max-height: calc(100vh - 24px);
+  max-width: calc(100vw - 148px);
+  max-height: calc(100vh - 74px);
+  display: contents;
 }
 
+.imageLarge{
+  height: 90%; 
+  border-radius: 10px;
+}
 /*
 * Стили компонента Buton (Load more)
 */
