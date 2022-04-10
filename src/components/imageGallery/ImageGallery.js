@@ -4,10 +4,17 @@ import PropTypes from 'prop-types';
 function ImageGallery({ listItem, imageClick }) {
   return (
     <ul className="ImageGallery" >
-      <ImageItem
-        onClick={imageClick}
-        hits={listItem}
-      />
+
+      {listItem.map(({ id, largeImageURL, webformatURL, tags }) => (
+        <li className='ImageGalleryItem' key={id}>
+          <ImageItem
+            onClick={() => imageClick(largeImageURL)}
+            webformatURL={webformatURL}
+            tags={tags}
+          />
+        </li>
+      ))}
+
     </ul>
   )
 }
