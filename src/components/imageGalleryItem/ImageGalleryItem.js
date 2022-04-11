@@ -11,7 +11,6 @@ const ImageItem = ({ webformatURL, tags, largeImageURL, onClick }) => {
 export default ImageItem;
 
 ImageItem.propTypes = {
-  hits: PropTypes.array,
   webformatURL: PropTypes.string,
   tags: PropTypes.string,
   largeImageURL: PropTypes.string,

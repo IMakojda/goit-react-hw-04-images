@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import PropTypes from 'prop-types';
 
 export default function Searchbar({ onSubmit }) {
   const [searchQuery, setSearchQuery] = useState('')
@@ -41,3 +42,7 @@ export default function Searchbar({ onSubmit }) {
   )
 
 };
+
+Searchbar.prototype = {
+  onSubmit: PropTypes.func,
+}
